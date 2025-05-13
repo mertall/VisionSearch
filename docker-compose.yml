@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visionsearch-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      IMG_DIR: /shared/images
+    volumes:
+      - shared-data:/shared/images
+      - shared-data:/tmp
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: >
+      uvicorn server.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visionsearch-worker
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      IMG_DIR: /shared/images
+    volumes:
+      - shared-data:/shared/images
+      - shared-data:/tmp
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: >
+      python scripts/index_worker_main.py
+
+  redis:
+    image: redis:7-alpine
+    container_name: visionsearch-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  shared-data:
