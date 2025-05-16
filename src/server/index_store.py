@@ -17,12 +17,12 @@ class HNSWIndexSingleton:
     META_PATH = "data/index/image_paths.txt"
 
     # Configurable HNSW index settings from env
-    DIM = int(os.getenv("HNSW_DIM", 512))
-    MAX_ELEMENTS = int(os.getenv("HNSW_MAX_ELEMENTS", 100_000))
+    DIM = int(os.getenv("HNSW_DIM"))
+    MAX_ELEMENTS = int(os.getenv("HNSW_MAX_ELEMENTS"))
     SPACE = os.getenv("HNSW_SPACE", "cosine")
-    EF_CONSTRUCTION = int(os.getenv("HNSW_EF_CONSTRUCTION", 200))
-    M = int(os.getenv("HNSW_M", 16))
-    EF_SEARCH = int(os.getenv("HNSW_EF_SEARCH", 50))
+    EF_CONSTRUCTION = int(os.getenv("HNSW_EF_CONSTRUCTION"))
+    M = int(os.getenv("HNSW_M"))
+    EF_SEARCH = int(os.getenv("HNSW_EF_SEARCH"))
 
     @classmethod
     def ensure_ready(cls):

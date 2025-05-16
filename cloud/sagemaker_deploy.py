@@ -23,8 +23,8 @@ model_dir = workdir
 code_dir  = os.path.join(workdir, "code")
 
 # Local inference script and requirements
-inference_src     = "inference_deployment/inference.py"
-requirements_src  = "inference_deployment/requirements.txt"
+inference_src     = "/inference_deployment/inference.py"
+requirements_src  = "/inference_deployment/requirements.txt"
 
 os.makedirs(code_dir, exist_ok=True)
 
@@ -98,7 +98,7 @@ hf_model = HuggingFaceModel(
 predictor = hf_model.deploy(
     initial_instance_count=1,
     instance_type="ml.g5.xlarge",
-    endpoint_name="clip-multimodal-endpoint"
+    endpoint_name=os.getenv("CLIP_ENDPOINT_NAME")
 )
 
 print("🚀 Deployed endpoint:", predictor.endpoint_name)

@@ -11,7 +11,7 @@ from server.sage_maker import CLIPSageMakerClient
 from server.index_store import HNSWIndexSingleton
 
 logger = logging.getLogger(__name__)
-IMG_DIR = os.getenv("IMG_DIR", "/shared/images")
+IMG_DIR = os.getenv("IMG_DIR")
 
 def build_index(repo: str, split: str="train", image_column: str="image"):
     logger.info(f"📦 Starting simplified index build for {repo}/{split}")

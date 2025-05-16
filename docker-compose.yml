@@ -19,14 +19,15 @@ services:
       HNSW_EF_CONSTRUCTION: 200
       HNSW_M: 16
       HNSW_EF_SEARCH: 50 
-      CLIP_ENDPOINT: clip-multimodal-endpoint
+      CLIP_ENDPOINT_NAME: clip-multimodal-endpoint
 
 
-      HF_API_TOKEN: ${HF_TOKEN}
+      HF_API_TOKEN:          ${HF_TOKEN}
       AWS_ACCESS_KEY_ID:     ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      SAGEMAKER_ROLE_ARN: ${SAGEMAKER_ROLE_ARN}
-
+      SAGEMAKER_ROLE_ARN:    ${SAGEMAKER_ROLE_ARN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
     command:
       - uvicorn
       - server.main:app

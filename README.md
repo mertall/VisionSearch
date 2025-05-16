@@ -8,22 +8,29 @@ Docker container with text and image CLIP-based embeddings served on Sagemaker I
 
    ```bash
    brew install awscli       # macOS
-   aws configure             # enter ACCESS_KEY_ID & SECRET_ACCESS_KEY
+   aws configure             
    ```
-   You must set these yourself
+
+   You must set these yourself.  
+   Standard Sagemaker Execution role with S3 bucket priveleges, find ARN on AWS or pull it down with boto3 - iam
+
    ```bash
     AWS_ACCESS_KEY_ID=""
     AWS_SECRET_ACCESS_KEY=""
-    SAGEMAKER_ROLE_ARN = "" # Standard Sagemaker Execution role with S3 bucket priveleges, find ARN on AWS or pull it down with boto3 - iam
+    SAGEMAKER_ROLE_ARN = "" 
     HF_TOKEN = ""
    ```
+
 2. **AWS Cloud Infrastructure**  
-   `cloud/sagemaker_deploy.py`   
-   Sets up our AWS infra, as long as we provision a Sagemaker execution role given all s3 bucket privleges. 
-    ```
+   `cloud/sagemaker_deploy.py`  
+
+   Sets up our AWS infra, as long as we provision a Sagemaker execution role given all s3 bucket privleges.  
+
+    ```bash
     cd cloud
     python3 sagemaker_deploy.py
     ```
+
 3. **Docker**
 
    ```bash
