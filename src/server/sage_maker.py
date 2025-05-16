@@ -1,5 +1,6 @@
 import io
 import ast 
+import json
 import os
 import numpy as np
 from PIL import Image
@@ -59,61 +60,28 @@ class CLIPSageMakerClient:
         logger.info(f"✅ Connected to SageMaker endpoint: {self.endpoint_name}")
         self._initialized = True
 
-    def normalize_embeedding(self, embedding) -> np.ndarray:
-        logger.debug(f"[normalize_embeedding] 🔁 Raw model response type: {type(embedding)}")
-
-        # ────── Step 1: If response is list with stringified array ──────
-        if isinstance(embedding, list) and len(embedding) > 0 and isinstance(embedding[0], str):
-            logger.debug("[normalize_embedding] 📦 Response is list with a stringified array — parsing first item.")
-            try:
-                embedding = ast.literal_eval(embedding[0])
-            except Exception as e:
-                logger.error(f"[normalize_embeedding] ❌ Failed to parse stringified embedding: {e}")
-                raise
-
-        # ────── Step 2: If result is a single nested list ──────
-        elif isinstance(embedding, str):
-            logger.debug("[normalize_embeedding] 🧩 Response is raw string — parsing as literal.")
-            try:
-                embedding = ast.literal_eval(embedding)
-            except Exception as e:
-                logger.error(f"[normalize_embeedding] ❌ Failed to parse string: {e}")
-                raise
-
-        # ────── Step 3: Flatten nested list if needed ──────
-        if isinstance(embedding, list) and isinstance(embedding[0], list):
-            logger.debug("[normalize_embeedding] 🔃 Flattening nested list.")
-            embedding = embedding[0]
-
-        logger.info(f"[normalize_embeedding] 📐 Parsed embedding vector length: {len(embedding)}")
-
-        # ────── Step 4: Convert to NumPy array ──────
-        try:
-            embedding = np.array(embedding, dtype=np.float32).reshape(1, -1)
-        except Exception as e:
-            logger.error(f"[normalize_embeedding] ❌ Failed to convert embedding to NumPy array: {e}")
-            raise
-
-        logger.info(f"[normalize_embeedding] ✅ Final embedding shape: {embedding.shape}")
-        return embedding
     
     def encode_image(self, image: Image.Image) -> np.ndarray:
         buf = io.BytesIO()
         image.save(buf, format="JPEG")
         buf.seek(0)
 
-        result = self.image_predictor.predict(buf.read())
-
-        embedding = self.normalize_embeedding(result)
+        data, _ =  self.image_predictor.predict(buf.read())
+        decoded_data = json.loads(data)
+        decoded_data = decoded_data[0]
+        embedding = np.array(decoded_data, dtype=np.float32).reshape(1, -1)
 
         return embedding
 
     def encode_text(self, text: str) -> np.ndarray:
         payload = {"inputs": text}
 
-        result = self.json_predictor.predict(payload)
+        data, _ = self.json_predictor.predict(payload)
 
-        embedding = self.normalize_embeedding(result)
+        decoded_data = json.loads(data)
+        decoded_data = decoded_data[0]
+        embedding = np.array(decoded_data, dtype=np.float32).reshape(1, -1)
+
 
         return embedding
 

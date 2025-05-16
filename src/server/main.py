@@ -40,7 +40,7 @@ def index_status():
     summary="Trigger index build",
     response_description="Confirmation that index build has completed and how many passed/failed."
 )
-def build_index(
+def build_index_endpoint(
     req: IndexBuildRequest
 ):
     """
