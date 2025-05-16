@@ -113,8 +113,7 @@ Docker container with text and image CLIP-based embeddings served on Sagemaker I
       ---
 
 ## Future Work
-
-Need to reassess use of JSON deserializer as it has added post processing logic that with careful deserializer selection can be avoided.  
+BUG: Inference logic for output needs to cleaned up.
 
 * **Improve Data Pipeline**  
    Utilize celery workers and tasks, so we can load index quickly with ~100 embeddings and then continue to add more embeddings in background.
