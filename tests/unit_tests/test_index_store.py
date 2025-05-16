@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pytest
-from server.index_store import HNSWIndexSingleton
+from src.server.index_store import HNSWIndexSingleton
 
 @pytest.mark.unit
 def test_query_triggers_auto_load():

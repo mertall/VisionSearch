@@ -1,5 +1,5 @@
 import pytest
-from server.index_store import HNSWIndexSingleton
+from src.server.index_store import HNSWIndexSingleton
 
 @pytest.fixture(autouse=True)
 def reset_index_singleton():

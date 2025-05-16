@@ -1,0 +1,8 @@
+hf_models/
+models/
+shared/
+.cache/
+__pycache__/
+*.pt
+*.onnx
+*.zip

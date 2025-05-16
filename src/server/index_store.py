@@ -68,7 +68,7 @@ class HNSWIndexSingleton:
         return cls._ready
 
     @classmethod
-    def query(cls, vector: np.ndarray, k=5):
+    def query(cls, vector: np.ndarray, k: int=5):
         """
         Perform a KNN search.
         Returns a list of image paths and similarity scores.
@@ -90,10 +90,12 @@ class HNSWIndexSingleton:
         import gc
 
         with cls._lock:
-            cls.ensure_ready()
 
+            cls.ensure_ready()
+            cls._ready = False
             start_id = len(cls._image_paths)
-            cls._index.add_items(np.array(vectors), list(range(start_id, start_id + len(vectors))))
+            flat_vectors = np.vstack(vectors).astype(np.float32)  # Ensures shape=(N, D)
+            cls._index.add_items(np.array(flat_vectors), list(range(start_id, start_id + len(flat_vectors))))
             cls._image_paths.extend(paths)
             logger.info(f"➕ Added {len(paths)} items to index. Total: {len(cls._image_paths)}")
 
@@ -109,6 +111,7 @@ class HNSWIndexSingleton:
         del vectors
         del paths
         gc.collect()
+        cls._ready = True
 
     @classmethod
     def save(cls):

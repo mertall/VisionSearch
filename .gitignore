@@ -1,0 +1,7 @@
+model.tar.gz
+.env
+__pycache__/*
+model/*
+tests/__pycache__/*
+mycommands.txt
+cloud/model
