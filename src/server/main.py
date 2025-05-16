@@ -24,7 +24,7 @@ app = FastAPI(
     summary="Get index build status",
     response_description="Indicates whether the index is ready or still building. Invokes building of index if not ready"
 )
-def check_status():
+def index_status():
     """
     Check the current status of the HNSW index.
 
@@ -35,6 +35,35 @@ def check_status():
     HNSWIndexSingleton.ensure_ready()
     status = "ready" if HNSWIndexSingleton.is_ready() else "building"
     return StatusResponse(status=status)
+@app.post(
+    "/index/build", 
+    summary="Trigger index build",
+    response_description="Confirmation that index build has completed and how many passed/failed."
+)
+def build_index(
+    req: IndexBuildRequest
+):
+    """
+    Build the HNSW index from a HuggingFace dataset.
+
+    Args:
+        req (IndexBuildRequest): Contains:
+            - dataset_repo (str): HF repo identifier (e.g., 'huggingface/xyz').
+            - split (str): Dataset split to use (e.g., 'train').
+            - image_column (str): Column name containing image paths or URLs.
+
+    Returns:
+        dict: {"status": "completed", "dataset": <repo_id>} on success.
+
+    Raises:
+        HTTPException(500): If the index build fails.
+    """
+    try:
+        build_index(req.dataset_repo, req.split, req.image_column)
+        return {"status": "completed", "dataset": req.dataset_repo}
+    except Exception as e:
+        logger.error(f"❌ Build index error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to build index.")
 
 @app.get(
     "/search", 
@@ -69,33 +98,3 @@ def search(
     return SearchResponse(
         results=[SearchResult(image_path=p, score=s) for p, s in zip(results, scores)]
     )
-
-@app.post(
-    "/index/build", 
-    summary="Trigger index build",
-    response_description="Confirmation that index build has completed and how many passed/failed."
-)
-def build_index_endpoint(
-    req: IndexBuildRequest
-):
-    """
-    Build the HNSW index from a HuggingFace dataset.
-
-    Args:
-        req (IndexBuildRequest): Contains:
-            - dataset_repo (str): HF repo identifier (e.g., 'huggingface/xyz').
-            - split (str): Dataset split to use (e.g., 'train').
-            - image_column (str): Column name containing image paths or URLs.
-
-    Returns:
-        dict: {"status": "completed", "dataset": <repo_id>} on success.
-
-    Raises:
-        HTTPException(500): If the index build fails.
-    """
-    try:
-        build_index(req.dataset_repo, req.split, req.image_column)
-        return {"status": "completed", "dataset": req.dataset_repo}
-    except Exception as e:
-        logger.error(f"❌ Build index error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to build index.")
