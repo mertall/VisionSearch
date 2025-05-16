@@ -13,8 +13,8 @@ Docker container with text and image CLIP-based embeddings served on Sagemaker I
 
 2. **Data Ingestion & HNSW Indexing**
 
-   * API endpoints (FastAPI/FastAPI + Celery initially) to pull a HF dataset (images or text), embed via the endpoint, and build an HNSW index (hnswlib).
-   * Simple pipeline: read dataset → batch embed → insert into index → persist.
+   * API endpoint (FastAPI/FastAPI) to pull a HF dataset (images or text), embed via the sagemaker inference endpoint, and build an HNSW index (hnswlib).
+   * Simple pipeline: read dataset → embed → insert into index.
 
 3. **Retrieval-Augmented Generation (RAG)**
 
