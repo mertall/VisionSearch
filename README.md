@@ -2,6 +2,24 @@
 
 Docker container with text and image CLIP-based embeddings served on Sagemaker Inference Endpoint, HNSW indexing, and RAG-powered search, exposed via FastAPI router.
 
+## Components
+
+1. **Model Packaging & SageMaker Endpoint**
+
+   * Download `openai/clip-vit-base-patch32` artifacts.
+   * Copy custom code (`inference.py`, `requirements.txt`) under `model/code/`.
+   * Archive `model/` → `model.tar.gz`, upload to S3.
+   * Deploy a HuggingFaceModel endpoint in SageMaker serving both vision/text embeddings.
+
+2. **Data Ingestion & HNSW Indexing**
+
+   * API endpoints (FastAPI/FastAPI + Celery initially) to pull a HF dataset (images or text), embed via the endpoint, and build an HNSW index (hnswlib).
+   * Simple pipeline: read dataset → batch embed → insert into index → persist.
+
+3. **Retrieval-Augmented Generation (RAG)**
+
+   * Query-time: given a text prompt, query the index for top-k nearest image/text embeddings.
+
 ## Local Setup
 
 1. **AWS Setup**
@@ -46,37 +64,11 @@ Docker container with text and image CLIP-based embeddings served on Sagemaker I
       ### GET /index/status
 
       **Summary:** Check Status
-      **Operation ID:** `check_status_index_status_get`
 
       **Response (200):**
 
       * **Content:** `application/json`
       * **Schema:** [StatusResponse](#statusresponse)
-
-      ---
-
-      ### GET /search
-
-      **Summary:** Search
-      **Operation ID:** `search_search_get`
-
-      #### Query Parameters
-
-      | Name  | Type    | Required | Default | Constraints | Description                                     |
-      | ----- | ------- | -------- | ------- | ----------- | ----------------------------------------------- |
-      | query | string  | Yes      | —       | —           | Text query to encode and search over the index. |
-      | k     | integer | No       | 5       | 1 ≤ k ≤ 100 | Number of nearest neighbors to retrieve.        |
-
-      **Responses:**
-
-      * **200 (Successful Response)**
-
-      * **Content:** `application/json`
-      * **Schema:** [SearchResponse](#searchresponse)
-      * **422 (Validation Error)**
-
-      * **Content:** `application/json`
-      * **Schema:** [HTTPValidationError](#httpvalidationerror)
 
       ---
 
@@ -103,82 +95,22 @@ Docker container with text and image CLIP-based embeddings served on Sagemaker I
 
       ---
 
-      ## Component Schemas
+      ### GET /search
 
-      ### IndexBuildRequest
+      **Summary:** Search
 
-      | Field         | Type   | Required | Default | Description                                |
-      | ------------- | ------ | -------- | ------- | ------------------------------------------ |
-      | dataset\_repo | string | Yes      | —       | HF repo identifier (e.g., `user/dataset`). |
-      | split         | string | No       | `train` | Dataset split to use.                      |
-      | image\_column | string | No       | `image` | Column name for image paths.               |
+      **Responses:**
 
-      ---
+      * **200 (Successful Response)**
 
-      #### SearchResponse
+      * **Content:** `application/json`
+      * **Schema:** [SearchResponse](#searchresponse)
+      * **422 (Validation Error)**
 
-      | Field   | Type                                   | Required | Description             |
-      | ------- | -------------------------------------- | -------- | ----------------------- |
-      | results | array of [SearchResult](#searchresult) | Yes      | List of search results. |
+      * **Content:** `application/json`
+      * **Schema:** [HTTPValidationError](#httpvalidationerror)
 
       ---
-
-      #### SearchResult
-
-      | Field       | Type   | Required | Description                               |
-      | ----------- | ------ | -------- | ----------------------------------------- |
-      | image\_path | string | Yes      | Path or URL to the image.                 |
-      | score       | number | Yes      | Similarity score (higher = more similar). |
-
-      ---
-
-      #### StatusResponse
-
-      | Field  | Type   | Required | Description            |
-      | ------ | ------ | -------- | ---------------------- |
-      | status | string | Yes      | `ready` or `building`. |
-
-      ---
-
-      #### HTTPValidationError
-
-      | Field  | Type                                         | Description                           |
-      | ------ | -------------------------------------------- | ------------------------------------- |
-      | detail | array of [ValidationError](#validationerror) | List of individual validation errors. |
-
-      ---
-
-      #### ValidationError
-
-      | Field | Type                | Description                    |
-      | ----- | ------------------- | ------------------------------ |
-      | loc   | array of string/int | Location of the invalid field. |
-      | msg   | string              | Error message.                 |
-      | type  | string              | Error type identifier.         |
-
-      ---
-
-*Generated from OpenAPI 3.1.0 specification.*
-
-
-
-## Components
-
-1. **Model Packaging & SageMaker Endpoint**
-
-   * Download `openai/clip-vit-base-patch32` artifacts.
-   * Copy custom code (`inference.py`, `requirements.txt`) under `model/code/`.
-   * Archive `model/` → `model.tar.gz`, upload to S3.
-   * Deploy a HuggingFaceModel endpoint in SageMaker serving both vision/text embeddings.
-
-2. **Data Ingestion & HNSW Indexing**
-
-   * API endpoints (FastAPI/FastAPI + Celery initially) to pull a HF dataset (images or text), embed via the endpoint, and build an HNSW index (hnswlib).
-   * Simple pipeline: read dataset → batch embed → insert into index → persist.
-
-3. **Retrieval-Augmented Generation (RAG)**
-
-   * Query-time: given a text prompt, query the index for top-k nearest image/text embeddings.
 
 ## Future Work
 
